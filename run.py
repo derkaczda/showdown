@@ -17,6 +17,8 @@ from data import all_move_json
 from data import pokedex
 from data.mods.apply_mods import apply_mods
 
+import time
+
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,8 @@ async def showdown():
 
     ps_websocket_client = await PSWebsocketClient.create(config.username, config.password, config.websocket_uri)
     await ps_websocket_client.login()
+
+    time.sleep(10)
 
     battles_run = 0
     wins = 0
