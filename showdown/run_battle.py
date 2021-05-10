@@ -179,8 +179,8 @@ async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
     battle = await start_battle(ps_websocket_client, pokemon_battle_type)
     if config.data_collect:
-        collector = datacollector.DataCollector(config.data_directory, config.data_merge)
-        collector.tag_dataset(battle.battle_tag)
+        collector = datacollector.DataCollector(config.data_directory,battle.battle_tag, config.data_merge)
+        #collector.tag_dataset(battle.battle_tag)
     while True:
         msg = await ps_websocket_client.receive_message()
         if battle_is_finished(battle.battle_tag, msg):

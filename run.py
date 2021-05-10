@@ -44,7 +44,7 @@ def parse_configs():
     config.run_count = int(env("RUN_COUNT", 1))
     config.room_name = env("ROOM_NAME", config.room_name)
     config.data_directory = env("DATA_DIR", "dataset")
-    config.data_merge = env("DATA_MERGE", False)
+    config.data_merge = env.bool("DATA_MERGE", False)
     config.data_collect = env("DATA_COLLECT", False)
 
     if config.bot_mode == constants.CHALLENGE_USER:
