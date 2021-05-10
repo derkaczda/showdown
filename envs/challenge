@@ -4,3 +4,4 @@ POKEMON_MODE=gen8randombattle
 RUN_COUNT=10
 USER_TO_CHALLENGE=derkaczda_guest2
 BOT_MODE=CHALLENGE_USER
+DATA_DIR=dataset

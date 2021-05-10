@@ -42,6 +42,7 @@ def parse_configs():
     config.pokemon_mode = env("POKEMON_MODE", constants.DEFAULT_MODE)
     config.run_count = int(env("RUN_COUNT", 1))
     config.room_name = env("ROOM_NAME", config.room_name)
+    config.data_directory = env("DATA_DIR", "dataset")
 
     if config.bot_mode == constants.CHALLENGE_USER:
         config.user_to_challenge = env("USER_TO_CHALLENGE")
@@ -95,7 +96,7 @@ async def showdown():
         else:
             raise ValueError("Invalid Bot Mode")
 
-        winner = await pokemon_battle(ps_websocket_client, config.pokemon_mode)
+        winner = await pokemon_battle(ps_websocket_client, config.pokemon_mode, config.data_directory)
 
         if winner == config.username:
             wins += 1

@@ -21,6 +21,8 @@ search_depth = 2
 
 save_replay = False
 
+data_directory = None
+
 
 class CustomFormatter(logging.Formatter):
     def format(self, record):

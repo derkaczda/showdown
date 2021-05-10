@@ -16,6 +16,8 @@ from showdown.battle_modifier import async_update_battle
 
 from showdown.websocket_client import PSWebsocketClient
 
+import datacollector
+
 logger = logging.getLogger(__name__)
 
 
@@ -171,8 +173,9 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
     return battle
 
 
-async def pokemon_battle(ps_websocket_client, pokemon_battle_type):
+async def pokemon_battle(ps_websocket_client, pokemon_battle_type, dataset_dir):
     battle = await start_battle(ps_websocket_client, pokemon_battle_type)
+    collector = datacollector.DataCollector(dataset_dir, battle.battle_tag)
     while True:
         msg = await ps_websocket_client.receive_message()
         if battle_is_finished(battle.battle_tag, msg):
@@ -182,6 +185,7 @@ async def pokemon_battle(ps_websocket_client, pokemon_battle_type):
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
             return winner
         else:
+            collector.save(battle)
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
                 best_move = await async_pick_move(battle)
