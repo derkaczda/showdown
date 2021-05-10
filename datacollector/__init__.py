@@ -23,7 +23,7 @@ class DataCollector():
         if not os.path.exists(self.directory):
             os.mkdir(self.directory)
         if not os.path.exists(os.path.join(self.directory, self.raw_dir_name)):
-            os.mkdir(self.raw_dir_name)
+            os.mkdir(os.path.join(self.directory, self.raw_dir_name))
 
     def _tag_dataset(self, battle_tag):
         with open(self.filepath, "w") as f:
