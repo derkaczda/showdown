@@ -3,15 +3,17 @@ import time
 import os
 
 class DataCollector():
-    def __init__(self, directory, battle_tag):
+    def __init__(self, directory, is_merger):
         self.directory = directory
+        self.is_merger = is_merger
+        self.merged_dir_name = "merged"
         self.raw_dir_name = "raw"
         self.filename_extension = ".txt"
         self.filename = self._create_filename()
         self.filepath = os.path.join(self.directory,self.raw_dir_name, self.filename)
+        self.filepath_merged = os.path.join(self.directory, self.merged_dir_name, self.filename)
 
         self._create_data_directory()
-        self._tag_dataset(battle_tag)
         self.battle_log = []
 
     def _create_filename(self):
@@ -24,8 +26,10 @@ class DataCollector():
             os.mkdir(self.directory)
         if not os.path.exists(os.path.join(self.directory, self.raw_dir_name)):
             os.mkdir(os.path.join(self.directory, self.raw_dir_name))
+        if not os.path.exists(os.path.join(self.directory, self.merged_dir_name)):
+            os.mkdir(os.path.join(self.directory, self.merged_dir_name))
 
-    def _tag_dataset(self, battle_tag):
+    def tag_dataset(self, battle_tag):
         with open(self.filepath, "w") as f:
             f.write(f"{battle_tag}\n")
 
@@ -42,4 +46,7 @@ class DataCollector():
             "opponent": battle.opponent.to_dict()
         }
         self.battle_log.append(state)
+
+    def merge(self):
+        pass
 

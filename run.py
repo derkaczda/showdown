@@ -17,6 +17,7 @@ from data import all_move_json
 from data import pokedex
 from data.mods.apply_mods import apply_mods
 
+
 import time
 
 
@@ -43,6 +44,8 @@ def parse_configs():
     config.run_count = int(env("RUN_COUNT", 1))
     config.room_name = env("ROOM_NAME", config.room_name)
     config.data_directory = env("DATA_DIR", "dataset")
+    config.data_merge = env("DATA_MERGE", False)
+    config.data_collect = env("DATA_COLLECT", False)
 
     if config.bot_mode == constants.CHALLENGE_USER:
         config.user_to_challenge = env("USER_TO_CHALLENGE")
@@ -80,7 +83,7 @@ async def showdown():
     ps_websocket_client = await PSWebsocketClient.create(config.username, config.password, config.websocket_uri)
     await ps_websocket_client.login()
 
-    time.sleep(10)
+    time.sleep(10) # prevent race conditions with server login and user challenge
 
     battles_run = 0
     wins = 0
@@ -95,8 +98,8 @@ async def showdown():
             await ps_websocket_client.search_for_match(config.pokemon_mode, team)
         else:
             raise ValueError("Invalid Bot Mode")
-
-        winner = await pokemon_battle(ps_websocket_client, config.pokemon_mode, config.data_directory)
+            
+        winner = await pokemon_battle(ps_websocket_client, config)
 
         if winner == config.username:
             wins += 1

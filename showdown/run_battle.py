@@ -18,6 +18,8 @@ from showdown.websocket_client import PSWebsocketClient
 
 import datacollector
 
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -173,20 +175,27 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
     return battle
 
 
-async def pokemon_battle(ps_websocket_client, pokemon_battle_type, dataset_dir):
+async def pokemon_battle(ps_websocket_client, config):
+    pokemon_battle_type = config.pokemon_mode 
     battle = await start_battle(ps_websocket_client, pokemon_battle_type)
-    collector = datacollector.DataCollector(dataset_dir, battle.battle_tag)
+    if config.data_collect:
+        collector = datacollector.DataCollector(config.data_directory, config.data_merge)
+        collector.tag_dataset(battle.battle_tag)
     while True:
         msg = await ps_websocket_client.receive_message()
         if battle_is_finished(battle.battle_tag, msg):
             winner = msg.split(constants.WIN_STRING)[-1].split('\n')[0].strip()
             logger.debug("Winner: {}".format(winner))
-            collector.save()
             await ps_websocket_client.send_message(battle.battle_tag, [config.battle_ending_message])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
+
+            collector.save()
+            collector.merge()
+
             return winner
         else:
-            collector.add(battle)
+            if config.data_collect:
+                collector.add(battle)
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
                 best_move = await async_pick_move(battle)
