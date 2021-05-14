@@ -53,13 +53,6 @@ class DataCollector():
             f.write(json.dumps({"game": self.battle_log}, indent=4, separators=(',', ': ')))
 
     def add(self, msg):
-        # state = {
-        #     "weather": battle.weather,
-        #     "started": battle.started,
-        #     "field": battle.field,
-        #     "user": battle.user.to_dict(),
-        #     "opponent": battle.opponent.to_dict()
-        # }
         self.battle_log.append(self._parse_msg(msg))
 
     def merge(self):
@@ -94,11 +87,6 @@ class DataCollector():
         state_line = lines[2].replace("||<<< ", "")
         state_line = state_line[1:-1]
         return json.loads(state_line)
-        # with open('log.txt', 'a') as f:
-        #     #f.write(f"{state_line}\n\n")
-        #     state = json.loads(state_line)
-
-        #     f.write(json.dumps(state, indent=4, separators=(',', ': ')))
 
 
     def _request_msg(self):
@@ -116,4 +104,4 @@ class DataCollector():
         '''
         msg = msg.split('\n')
         msg = ' '.join(msg)
-        return msg #'let b = battle.toJSON(); delete b["log"]; delete b["inputLog"]; JSON.stringify(b)'
+        return msg
