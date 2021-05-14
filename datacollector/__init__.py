@@ -29,6 +29,7 @@ class DataCollector():
         self.battle_log = {}
 
         self.turn = 0
+        self.eval_msg = self._request_msg()
 
     def _create_filename(self):
         hash = hashlib.sha1()
@@ -84,17 +85,31 @@ class DataCollector():
 
     def msg_for_collector(self, msg):
         lines = msg.split('\n')
-        response = f"||>>> {self.request_msg()}"
+        response = f"||>>> {self.eval_msg}"
         if response in lines:
             return True
         return False
 
     def parse_msg(self, msg):
         lines = msg.split('\n')
-        state_line = lines[2]
+        state_line = lines[2].replace("||<<< ", "")
         with open('log.txt', 'a') as f:
             f.write(f"{state_line}\n\n")
 
 
-    def request_msg(self):
-        return 'let b = battle.toJSON(); delete b["log"]; delete b["inputLog"]; b'
+    def _request_msg(self):
+        msg = f'''
+        let b = battle.toJSON();
+        var l = [
+            "debugMode", "log", "inputLog","gameType", 
+            "reportExactHP", "strictChoices", "rated",
+            "messageLog", "formatData"
+        ];
+        var size = l.length;
+        for (var i = 0;i < size; i++)
+            delete b[l[i]];
+        JSON.stringify(b)
+        '''
+        msg = msg.split('\n')
+        msg = ' '.join(msg)
+        return msg #'let b = battle.toJSON(); delete b["log"]; delete b["inputLog"]; JSON.stringify(b)'

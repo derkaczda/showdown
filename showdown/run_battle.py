@@ -202,7 +202,7 @@ async def pokemon_battle(ps_websocket_client, config):
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
                 if config.data_collect and config.data_merge:
-                    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.request_msg()])
+                    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
  
                 best_move = await async_pick_move(battle)
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
