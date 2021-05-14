@@ -10,12 +10,12 @@ class DataCollector():
         self.is_merger = is_merger
         self.battle_tag = battle_tag
         
-        self.filename_extension = ".txt"
+        self.filename_extension = ".json"
         if self.is_merger:
-            self.filename = "0_" + battle_tag 
-            self.other_filename = "1_" + battle_tag
+            self.filename = self._create_filename() #"0_" + battle_tag 
+            self.other_filename = self._create_filename() #"1_" + battle_tag
         else:
-            self.filename = "1_" + battle_tag #self._create_filename()
+            self.filename = self._create_filename() #"1_" + battle_tag
 
         self.merged_dir_name = "merged"
         self.raw_dir_name = "raw"
@@ -26,7 +26,7 @@ class DataCollector():
         self.filepath_merged = os.path.join(self.directory, self.merged_dir_name, self.filename)
 
         self._create_data_directory()
-        self.battle_log = {}
+        self.battle_log = []
 
         self.turn = 0
         self.eval_msg = self._request_msg()
@@ -50,18 +50,17 @@ class DataCollector():
 
     def save(self):
         with open(self.filepath, "a") as f:
-            f.write(str(self.battle_log))
+            f.write(json.dumps({"game": self.battle_log}, indent=4, separators=(',', ': ')))
 
-    def add(self, battle):
-        state = {
-            "weather": battle.weather,
-            "started": battle.started,
-            "field": battle.field,
-            "user": battle.user.to_dict(),
-            "opponent": battle.opponent.to_dict()
-        }
-        self.battle_log.update({str(self.turn): state})
-        self.turn += 1
+    def add(self, msg):
+        # state = {
+        #     "weather": battle.weather,
+        #     "started": battle.started,
+        #     "field": battle.field,
+        #     "user": battle.user.to_dict(),
+        #     "opponent": battle.opponent.to_dict()
+        # }
+        self.battle_log.append(self._parse_msg(msg))
 
     def merge(self):
         if not self.is_merger:
@@ -90,11 +89,16 @@ class DataCollector():
             return True
         return False
 
-    def parse_msg(self, msg):
+    def _parse_msg(self, msg):
         lines = msg.split('\n')
         state_line = lines[2].replace("||<<< ", "")
-        with open('log.txt', 'a') as f:
-            f.write(f"{state_line}\n\n")
+        state_line = state_line[1:-1]
+        return json.loads(state_line)
+        # with open('log.txt', 'a') as f:
+        #     #f.write(f"{state_line}\n\n")
+        #     state = json.loads(state_line)
+
+        #     f.write(json.dumps(state, indent=4, separators=(',', ': ')))
 
 
     def _request_msg(self):
