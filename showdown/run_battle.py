@@ -21,7 +21,7 @@ import datacollector
 
 
 logger = logging.getLogger(__name__)
-
+once = False
 
 def battle_is_finished(battle_tag, msg):
     return msg.startswith(">{}".format(battle_tag)) and constants.WIN_STRING in msg and constants.CHAT_STRING not in msg
@@ -176,16 +176,21 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
 
 
 async def pokemon_battle(ps_websocket_client, config):
+    global once
     pokemon_battle_type = config.pokemon_mode 
     battle = await start_battle(ps_websocket_client, pokemon_battle_type)
+
     if config.data_collect:
         collector = datacollector.DataCollector(config.data_directory,battle.battle_tag, config.data_merge)
-        #collector.tag_dataset(battle.battle_tag)
     while True:
         msg = await ps_websocket_client.receive_message()
+        if collector.msg_for_collector(msg):
+            collector.parse_msg(msg)
+            continue
         if battle_is_finished(battle.battle_tag, msg):
             winner = msg.split(constants.WIN_STRING)[-1].split('\n')[0].strip()
             logger.debug("Winner: {}".format(winner))
+
             await ps_websocket_client.send_message(battle.battle_tag, [config.battle_ending_message])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
 
@@ -194,9 +199,12 @@ async def pokemon_battle(ps_websocket_client, config):
 
             return winner
         else:
-            if config.data_collect:
-                collector.add(battle)
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
+                if config.data_collect and config.data_merge:
+                    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.request_msg()])
+ 
                 best_move = await async_pick_move(battle)
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
+            
+                

@@ -82,3 +82,19 @@ class DataCollector():
         print("MERGING: file of second agent not found")
         return ""
 
+    def msg_for_collector(self, msg):
+        lines = msg.split('\n')
+        response = f"||>>> {self.request_msg()}"
+        if response in lines:
+            return True
+        return False
+
+    def parse_msg(self, msg):
+        lines = msg.split('\n')
+        state_line = lines[2]
+        with open('log.txt', 'a') as f:
+            f.write(f"{state_line}\n\n")
+
+
+    def request_msg(self):
+        return 'let b = battle.toJSON(); delete b["log"]; delete b["inputLog"]; b'
