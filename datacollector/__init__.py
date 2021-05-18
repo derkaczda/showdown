@@ -31,6 +31,8 @@ class DataCollector():
         self.turn = 0
         self.eval_msg = self._request_msg()
 
+        self.you_are_collector = False
+
     def _create_filename(self):
         hash = hashlib.sha1()
         hash.update(str(time.time()).encode('utf-8'))
@@ -49,11 +51,14 @@ class DataCollector():
             f.write(f"{battle_tag}\n")
 
     def save(self):
-        with open(self.filepath, "a") as f:
-            f.write(json.dumps({"game": self.battle_log}, indent=4, separators=(',', ': ')))
+        if self.you_are_collector:
+            with open(self.filepath, "a") as f:
+                f.write(json.dumps({"game": self.battle_log}, indent=4, separators=(',', ': ')))
 
     def add(self, msg):
         self.battle_log.append(self._parse_msg(msg))
+        if len(self.battle_log) == 1:
+            self.you_are_collector = self.battle_log[0]['turn'] == 1
 
     def merge(self):
         if not self.is_merger:
