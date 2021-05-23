@@ -1,9 +1,8 @@
 WEBSOCKET_URI=showdown-server:8081
-PS_USERNAME=derkaczda_guest1
+PS_USERNAME=derkaczda
 POKEMON_MODE=gen8randombattle
 RUN_COUNT=1
 USER_TO_CHALLENGE=derkaczda_guest2
 BOT_MODE=CHALLENGE_USER
 DATA_DIR=dataset
-DATA_MERGE=True
-DATA_COLLECT=True
+DATA_COLLECTOR=True

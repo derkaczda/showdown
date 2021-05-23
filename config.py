@@ -21,9 +21,8 @@ search_depth = 2
 
 save_replay = False
 
-data_collect= False
+data_collector = False
 data_directory = None
-data_merge = False
 
 
 class CustomFormatter(logging.Formatter):

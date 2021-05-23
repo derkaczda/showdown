@@ -184,7 +184,7 @@ async def start_battle(ps_websocket_client, pokemon_battle_type, collector):
 
 async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
-    collector = datacollector.DataCollector(config.data_directory, config.data_merge, config.username)
+    collector = datacollector.DataCollector(config.data_directory, config.data_collector, config.username)
     battle = await start_battle(ps_websocket_client, pokemon_battle_type, collector)
     await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
     while True:
@@ -197,12 +197,12 @@ async def pokemon_battle(ps_websocket_client, config):
             await ps_websocket_client.send_message(battle.battle_tag, [config.battle_ending_message])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
 
-            if config.data_merge:
+            if config.data_collector:
                 collector.save()
             collector.save_actions()
 
             return winner
-        elif collector.msg_for_collector(msg) and config.data_merge:
+        elif collector.msg_for_collector(msg) and config.data_collector:
             collector.add(msg)
         else:
             action_required = await async_update_battle(battle, msg)
@@ -211,6 +211,6 @@ async def pokemon_battle(ps_websocket_client, config):
                 best_move = await async_pick_move(battle)
                 collector.add_action(best_move)
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
-            if config.data_merge:
+            if config.data_collector:
                 await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])       
                 

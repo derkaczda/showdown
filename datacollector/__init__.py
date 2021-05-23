@@ -5,14 +5,14 @@ import json
 import time
 
 class DataCollector():
-    def __init__(self, directory, is_merger, username):
+    def __init__(self, directory, is_collector, username):
         self.directory = directory
-        self.is_merger = is_merger
+        self.is_collector = is_collector
         self.battle_tag ="" # battle_tag
         self.username = username
         
         self.filename_extension = ".json"
-        if self.is_merger:
+        if self.is_collector:
             self.filename = self._create_filename() #"0_" + battle_tag 
             self.other_filename = self._create_filename() #"1_" + battle_tag
         else:
@@ -83,7 +83,7 @@ class DataCollector():
         self.action_list.append({"turn": self.turn, "action": action})
 
     def merge(self):
-        if not self.is_merger:
+        if not self.is_collector:
             return
 
         other_filepath = os.path.join(self.raw_directory, self.other_filename)
