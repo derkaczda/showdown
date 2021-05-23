@@ -114,7 +114,6 @@ async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle,
             # first move needs to be picked here
             best_move = await async_pick_move(battle)
             await ps_websocket_client.send_message(battle.battle_tag, best_move)
-            await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
 
             return
 
@@ -181,7 +180,6 @@ async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
     collector = datacollector.DataCollector(config.data_directory, config.data_collector, config.username)
     battle = await start_battle(ps_websocket_client, pokemon_battle_type, collector)
-    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
     while True:
         msg = await ps_websocket_client.receive_message()
             
@@ -202,10 +200,10 @@ async def pokemon_battle(ps_websocket_client, config):
         else:
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
+                if config.data_collector:
+                    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])       
  
                 best_move = await async_pick_move(battle)
                 collector.add_action(best_move)
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
-            if config.data_collector:
-                await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])       
                 
