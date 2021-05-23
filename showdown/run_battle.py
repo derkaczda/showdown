@@ -4,6 +4,7 @@ import asyncio
 import concurrent.futures
 from copy import deepcopy
 import logging
+from time import time, sleep
 
 import data
 from data.helpers import get_standard_battle_sets
@@ -180,6 +181,7 @@ async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
     collector = datacollector.DataCollector(config.data_directory, config.data_collector, config.username)
     battle = await start_battle(ps_websocket_client, pokemon_battle_type, collector)
+     
     while True:
         msg = await ps_websocket_client.receive_message()
             
@@ -190,12 +192,15 @@ async def pokemon_battle(ps_websocket_client, config):
             await ps_websocket_client.send_message(battle.battle_tag, [config.battle_ending_message])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
 
-            if config.data_collector:
-                collector.save_battle_state()
             collector.save_actions()
+            if config.data_collector:
+                # wait till the second agent saved his actions to disk
+                # so we can merge them into the final battle log
+                sleep(5)
+                collector.save_battle_state()
 
             return winner
-        elif collector.msg_for_collector(msg) and config.data_collector:
+        elif collector.msg_for_collector(msg):
             collector.add_battle_state(msg)
         else:
             action_required = await async_update_battle(battle, msg)
@@ -206,4 +211,3 @@ async def pokemon_battle(ps_websocket_client, config):
                 best_move = await async_pick_move(battle)
                 collector.add_action(best_move)
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
-                
