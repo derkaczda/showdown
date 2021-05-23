@@ -198,12 +198,12 @@ async def pokemon_battle(ps_websocket_client, config):
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
 
             if config.data_collector:
-                collector.save()
+                collector.save_battle_state()
             collector.save_actions()
 
             return winner
         elif collector.msg_for_collector(msg) and config.data_collector:
-            collector.add(msg)
+            collector.add_battle_state(msg)
         else:
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
