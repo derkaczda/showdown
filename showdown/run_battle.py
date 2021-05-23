@@ -94,11 +94,14 @@ async def initialize_battle_with_tag(ps_websocket_client: PSWebsocketClient, set
             return battle, opponent_id, user_json
 
 
-async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json):
+async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json, collector):
     # keep reading messages until the opponent's first pokemon is seen
     # this is run when starting non team-preview battles
     while True:
         msg = await ps_websocket_client.receive_message()
+        if collector.msg_for_collector(msg):
+            collector.add(msg)
+            continue
         if constants.START_STRING in msg:
             split_msg = msg.split(constants.START_STRING)[-1].split('\n')
             for line in split_msg:
@@ -111,16 +114,21 @@ async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle,
             # first move needs to be picked here
             best_move = await async_pick_move(battle)
             await ps_websocket_client.send_message(battle.battle_tag, best_move)
+            await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
 
             return
 
 
-async def start_random_battle(ps_websocket_client: PSWebsocketClient, pokemon_battle_type):
+async def start_random_battle(ps_websocket_client: PSWebsocketClient, pokemon_battle_type, collector):
     battle, opponent_id, user_json = await initialize_battle_with_tag(ps_websocket_client)
     battle.battle_type = constants.RANDOM_BATTLE
     battle.generation = pokemon_battle_type[:4]
 
-    await read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json)
+    await read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json, collector)
+    #await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
+    #msg = await ps_websocket_client.receive_message()
+    #collector.add_start_turn(msg)
+
 
     return battle
 
@@ -161,10 +169,10 @@ async def start_standard_battle(ps_websocket_client: PSWebsocketClient, pokemon_
     return battle
 
 
-async def start_battle(ps_websocket_client, pokemon_battle_type):
+async def start_battle(ps_websocket_client, pokemon_battle_type, collector):
     if "random" in pokemon_battle_type:
         Scoring.POKEMON_ALIVE_STATIC = 30  # random battle benefits from a lower static score for an alive pkmn
-        battle = await start_random_battle(ps_websocket_client, pokemon_battle_type)
+        battle = await start_random_battle(ps_websocket_client, pokemon_battle_type, collector)
     else:
         battle = await start_standard_battle(ps_websocket_client, pokemon_battle_type)
 
@@ -176,15 +184,12 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
 
 async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
-    battle = await start_battle(ps_websocket_client, pokemon_battle_type)
-    collector = datacollector.DataCollector(config.data_directory,battle.battle_tag, config.data_merge)
+    collector = datacollector.DataCollector(config.data_directory, config.data_merge, config.username)
+    battle = await start_battle(ps_websocket_client, pokemon_battle_type, collector)
     await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
-
     while True:
         msg = await ps_websocket_client.receive_message()
-        if collector.msg_for_collector(msg):
-            collector.add(msg)
-            continue
+            
         if battle_is_finished(battle.battle_tag, msg):
             winner = msg.split(constants.WIN_STRING)[-1].split('\n')[0].strip()
             logger.debug("Winner: {}".format(winner))
@@ -192,17 +197,20 @@ async def pokemon_battle(ps_websocket_client, config):
             await ps_websocket_client.send_message(battle.battle_tag, [config.battle_ending_message])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
 
-            #if config.data_collect and config.data_merge:
-            collector.save()
+            if config.data_merge:
+                collector.save()
+            collector.save_actions()
 
             return winner
+        elif collector.msg_for_collector(msg) and config.data_merge:
+            collector.add(msg)
         else:
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
-                #if config.data_collect and config.data_merge:
-                await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
  
                 best_move = await async_pick_move(battle)
+                collector.add_action(best_move)
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
-            
+            if config.data_merge:
+                await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])       
                 
