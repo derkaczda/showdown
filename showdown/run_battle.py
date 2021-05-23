@@ -125,11 +125,6 @@ async def start_random_battle(ps_websocket_client: PSWebsocketClient, pokemon_ba
     battle.generation = pokemon_battle_type[:4]
 
     await read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json, collector)
-    #await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
-    #msg = await ps_websocket_client.receive_message()
-    #collector.add_start_turn(msg)
-
-
     return battle
 
 
