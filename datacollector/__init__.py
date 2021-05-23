@@ -5,10 +5,11 @@ import json
 import time
 
 class DataCollector():
-    def __init__(self, directory, battle_tag, is_merger):
+    def __init__(self, directory, is_merger, username):
         self.directory = directory
         self.is_merger = is_merger
-        self.battle_tag = battle_tag
+        self.battle_tag ="" # battle_tag
+        self.username = username
         
         self.filename_extension = ".json"
         if self.is_merger:
@@ -23,12 +24,16 @@ class DataCollector():
         self.merged_directory = os.path.join(self.directory, self.merged_dir_name)
 
         self.filepath = os.path.join(self.directory,self.raw_dir_name, self.filename)
+        self.action_path = os.path.join(self.directory, self.raw_dir_name, f"{self.filename}_actions_{self.username}{self.filename_extension}")
+        #self.other_action_path = os.path.join(self.directory, self.raw_dir_name, f"actions_{username}.txt")
+
         self.filepath_merged = os.path.join(self.directory, self.merged_dir_name, self.filename)
 
         self._create_data_directory()
         self.battle_log = []
 
         self.turn = 0
+        self.action_list = []
         self.eval_msg = self._request_msg()
 
         self.you_are_collector = False
@@ -51,14 +56,31 @@ class DataCollector():
             f.write(f"{battle_tag}\n")
 
     def save(self):
-        if self.you_are_collector:
-            with open(self.filepath, "a") as f:
-                f.write(json.dumps({"game": self.battle_log}, indent=4, separators=(',', ': ')))
+        self._save_json(self.filepath, {"game": self.battle_log})
+        # with open(self.filepath, "a") as f:
+        #     f.write(json.dumps({"game": self.battle_log}, indent=4, separators=(',', ': ')))
+
+    def save_actions(self):
+        self._save_json(self.action_path, {"actions": self.action_list})
+        # with open(self.action_path, 'a') as f:
+        #     f.write(json.dumps({"actions": self.action_list}, indent=4, separators=(',', ': ')))
+
+    def _save_json(self, file_name, data):
+        with open(file_name, 'a') as f:
+            f.write(json.dumps(data, indent=4, separators=(',', ': ')))
 
     def add(self, msg):
         self.battle_log.append(self._parse_msg(msg))
+        self.turn = self.battle_log[-1]['turn']
         if len(self.battle_log) == 1:
-            self.you_are_collector = self.battle_log[0]['turn'] == 1
+            self.you_are_collector = self.turn#self.battle_log[0]['turn'] == 1
+
+    def add_start_turn(self, msg):
+        tmp_msg = self._parse_msg(msg)
+        self.start_turn = tmp_msg['turn']
+
+    def add_action(self, action):
+        self.action_list.append({"turn": self.turn, "action": action})
 
     def merge(self):
         if not self.is_merger:
@@ -100,7 +122,10 @@ class DataCollector():
         var l = [
             "debugMode", "log", "inputLog","gameType", 
             "reportExactHP", "strictChoices", "rated",
-            "messageLog", "formatData"
+            "messageLog", "formatData", "sides", "field",
+            "prngSeed", "reportPercentages", "supportCancel",
+            "effect", "effectState", "event", "prng", "hints",
+            "queue", "formatid"
         ];
         var size = l.length;
         for (var i = 0;i < size; i++)
