@@ -17,17 +17,18 @@ class DataCollector():
         self.filename_extension = ".json"
         self.filename = self._create_filename()
 
-        self.raw_dir_name = "raw"
-        self.raw_directory = os.path.join(self.directory, self.raw_dir_name)
+        self.tmp_directory = os.path.join(self.directory, "tmp")
+        self._create_directories([self.tmp_directory])
 
-        # The filepath where the battle state is stored
-        self.filepath = os.path.join(self.directory,self.raw_dir_name, self.filename)
+        # The filepath where the battle state is stored.
+        # First we store it in a tmp directory because
+        # we need to merge the chosen actions into it.
+        # Afterwards we move it into the real directory
+        self.tmp_filepath = os.path.join(self.tmp_directory, self.filename)
+        self.filepath = os.path.join(self.directory, self.filename)
 
         # The filepath where the actions of this agents are stored
-        self.action_path = os.path.join(self.directory, self.raw_dir_name, f"{self.filename}_actions_{self.username}{self.filename_extension}")
-
-
-        self._create_data_directory()
+        self.action_path = os.path.join(self.tmp_directory, f"actions_{self.username}_{self.filename}")
 
         # Generate the eval request message so we don't need to
         # create it with every request.
@@ -43,23 +44,27 @@ class DataCollector():
         hash.update(str(time.time()).encode('utf-8'))
         return str(hash.hexdigest()) + self.filename_extension
 
-    def _create_data_directory(self):
-        if not os.path.exists(self.directory):
-            os.mkdir(self.directory)
-        if not os.path.exists(self.raw_directory):
-            os.mkdir(self.raw_directory)
+    def _create_directories(self, dir_list):
+        for dir in dir_list:
+            os.makedirs(dir, exist_ok=True)
 
     def save_battle_state(self):
         """Save the collected results from the eval request to disk."""
-        self._save_json(self.filepath, {"game": self.battle_log})
+        self._save_json(self.tmp_filepath, {"game": self.battle_log})
 
     def save_actions(self):
         """Save the chosen actions of the agent into a tmp file"""
         self._save_json(self.action_path, {"actions": self.action_list})
 
-    def _save_json(self, file_name, data):
+    # Save dictionary as json.
+    # Formated allows for a more readable result.
+    def _save_json(self, file_name, data, formated=True):
         with open(file_name, 'a') as f:
-            f.write(json.dumps(data, indent=4, separators=(',', ': ')))
+            if formated:
+                f.write(json.dumps(data, indent=4, separators=(',', ': ')))
+            else:
+                f.write(json.dumps(data))
+
 
     def add_battle_state(self, msg):
         """Add the response of the eval request to a list. This
