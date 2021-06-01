@@ -29,7 +29,11 @@ def get_smogon_stats_file_name(game_mode, month_delta=1):
 
     previous_month = datetime.now() - relativedelta.relativedelta(months=month_delta)
     year = previous_month.year
-    month = "{:02d}".format(previous_month.month)
+
+    # TODO: chnage that back 
+    # somehow the month switch did not work
+    #month = "{:02d}".format(previous_month.month)
+    month = "04"
 
     return smogon_url.format(year, month, game_mode)
 
