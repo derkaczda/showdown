@@ -1,7 +1,8 @@
 WEBSOCKET_URI=showdown-server:8081
 PS_USERNAME=derkaczda_guest2
 BOT_MODE=ACCEPT_CHALLENGE
-POKEMON_MODE=gen8randombattle
-RUN_COUNT=1
-DATA_DIR=dataset
+POKEMON_MODE=gen8customgame
+RUN_COUNT=100
+DATA_DIR=dataset/only_damage_two_pokemon
 DATA_COLLECTOR=False
+TEAM_NAME=no_type_only_damage/meowth
