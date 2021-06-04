@@ -19,8 +19,8 @@ from data.mods.apply_mods import apply_mods
 
 
 import time
-
-
+import os
+import random
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +45,13 @@ def parse_configs():
     config.room_name = env("ROOM_NAME", config.room_name)
     config.data_directory = env("DATA_DIR", "dataset")
     config.data_collector = env.bool("DATA_COLLECTOR", False)
+    config.team_dir = env("TEAM_DIR", None)
+
+    if config.team_dir != None:
+        files = os.listdir(os.path.join("/showdown", "teams", "teams", config.team_dir))
+        file = random.choice(files)
+        config.team_name = os.path.join(config.team_dir, file)
+        print(f"Selected team {file}")
 
     if config.bot_mode == constants.CHALLENGE_USER:
         config.user_to_challenge = env("USER_TO_CHALLENGE")
