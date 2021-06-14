@@ -1,0 +1,8 @@
+WEBSOCKET_URI=showdown-server:8081
+PS_USERNAME=dlinvcaccept7
+BOT_MODE=ACCEPT_CHALLENGE
+POKEMON_MODE=gen8customgame
+RUN_COUNT=100
+DATA_DIR=dataset/only_damage_two_pokemon/train
+DATA_COLLECTOR=False
+TEAM_DIR=only_damage_two_pokemon
