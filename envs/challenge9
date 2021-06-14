@@ -1,8 +1,10 @@
 WEBSOCKET_URI=showdown-server:8081
-PS_USERNAME=dlinvcaccept1
-BOT_MODE=ACCEPT_CHALLENGE
+PS_USERNAME=dlinvcchallenge9
+PS_PASSWORD=NbmjPcthUbzT4LGz
 POKEMON_MODE=gen8customgame
 RUN_COUNT=1000
+USER_TO_CHALLENGE=dlinvcaccept9
+BOT_MODE=CHALLENGE_USER
 DATA_DIR=dataset/only_damage_two_pokemon/train
-DATA_COLLECTOR=False
+DATA_COLLECTOR=True
 TEAM_DIR=only_damage_two_pokemon

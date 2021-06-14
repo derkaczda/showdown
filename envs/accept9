@@ -1,5 +1,5 @@
 WEBSOCKET_URI=showdown-server:8081
-PS_USERNAME=dlinvcaccept1
+PS_USERNAME=dlinvcaccept9
 BOT_MODE=ACCEPT_CHALLENGE
 POKEMON_MODE=gen8customgame
 RUN_COUNT=1000
