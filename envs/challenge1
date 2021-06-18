@@ -1,10 +1,9 @@
 WEBSOCKET_URI=showdown-server:8081
 PS_USERNAME=dlinvcchallenge1
 PS_PASSWORD=JbNeAhqXqw35EEAR
-POKEMON_MODE=gen8customgame
+POKEMON_MODE=gen8randombattle
 RUN_COUNT=10
 USER_TO_CHALLENGE=dlinvcaccept1
 BOT_MODE=CHALLENGE_USER
-DATA_DIR=dataset/physical_special
+DATA_DIR=dataset
 DATA_COLLECTOR=True
-TEAM_DIR=physical_special
