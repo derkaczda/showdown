@@ -1,7 +1,8 @@
 WEBSOCKET_URI=showdown-server:8081
 PS_USERNAME=dlinvcaccept7
 BOT_MODE=ACCEPT_CHALLENGE
-POKEMON_MODE=gen8randombattle
+POKEMON_MODE=gen8customgame
 RUN_COUNT=10
-DATA_DIR=dataset
+DATA_DIR=dataset/physical_special
 DATA_COLLECTOR=False
+TEAM_DIR=physical_special
