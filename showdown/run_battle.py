@@ -95,14 +95,11 @@ async def initialize_battle_with_tag(ps_websocket_client: PSWebsocketClient, set
             return battle, opponent_id, user_json
 
 
-async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json, collector):
+async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json):
     # keep reading messages until the opponent's first pokemon is seen
     # this is run when starting non team-preview battles
     while True:
         msg = await ps_websocket_client.receive_message()
-        if collector.msg_for_collector(msg):
-            collector.add(msg)
-            continue
         if constants.START_STRING in msg:
             split_msg = msg.split(constants.START_STRING)[-1].split('\n')
             for line in split_msg:
@@ -119,12 +116,12 @@ async def read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle,
             return
 
 
-async def start_random_battle(ps_websocket_client: PSWebsocketClient, pokemon_battle_type, collector):
+async def start_random_battle(ps_websocket_client: PSWebsocketClient, pokemon_battle_type):
     battle, opponent_id, user_json = await initialize_battle_with_tag(ps_websocket_client)
     battle.battle_type = constants.RANDOM_BATTLE
     battle.generation = pokemon_battle_type[:4]
 
-    await read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json, collector)
+    await read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json)
     return battle
 
 
@@ -164,10 +161,10 @@ async def start_standard_battle(ps_websocket_client: PSWebsocketClient, pokemon_
     return battle
 
 
-async def start_battle(ps_websocket_client, pokemon_battle_type, collector):
+async def start_battle(ps_websocket_client, pokemon_battle_type):
     if "random" in pokemon_battle_type:
         Scoring.POKEMON_ALIVE_STATIC = 30  # random battle benefits from a lower static score for an alive pkmn
-        battle = await start_random_battle(ps_websocket_client, pokemon_battle_type, collector)
+        battle = await start_random_battle(ps_websocket_client, pokemon_battle_type)
     else:
         battle = await start_standard_battle(ps_websocket_client, pokemon_battle_type)
 
@@ -179,8 +176,10 @@ async def start_battle(ps_websocket_client, pokemon_battle_type, collector):
 
 async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
-    collector = datacollector.DataCollector(config.data_directory, config.data_collector, config.username)
-    battle = await start_battle(ps_websocket_client, pokemon_battle_type, collector)
+    battle = await start_battle(ps_websocket_client, pokemon_battle_type)
+    other_user = config.user_to_challenge if config.data_collector else ""
+    collector = datacollector.DataCollector(config.data_directory, 
+        config.data_collector, config.username, other_user, battle.battle_tag)
      
     while True:
         msg = await ps_websocket_client.receive_message()
@@ -191,13 +190,8 @@ async def pokemon_battle(ps_websocket_client, config):
 
             await ps_websocket_client.send_message(battle.battle_tag, [config.battle_ending_message])
             await ps_websocket_client.leave_battle(battle.battle_tag, save_replay=config.save_replay)
-
-            collector.save_actions()
-            if config.data_collector:
-                # wait till the second agent saved his actions to disk
-                # so we can merge them into the final battle log
-                sleep(5)
-                collector.save_battle_state()
+            
+            collector.save_battle_state()
 
             return winner
         elif collector.msg_for_collector(msg):

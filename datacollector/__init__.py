@@ -5,9 +5,11 @@ import json
 import time
 
 class DataCollector():
-    def __init__(self, directory, is_collector, username):
+    def __init__(self, directory, is_collector, username, other_user, battle_tag):
         self.directory = directory
         self.username = username
+        self.other_user = other_user
+        self.battle_tag = battle_tag
 
         # Only one agent needs to collect the battle states
         # the other agent only collects his chosen actions.
@@ -15,20 +17,17 @@ class DataCollector():
         self.is_collector = is_collector
         
         self.filename_extension = ".json"
-        self.filename = self._create_filename()
 
         self.tmp_directory = os.path.join(self.directory, "tmp")
         self._create_directories([self.tmp_directory])
 
-        # The filepath where the battle state is stored.
-        # First we store it in a tmp directory because
-        # we need to merge the chosen actions into it.
-        # Afterwards we move it into the real directory
-        self.filepath = os.path.join(self.directory, self.filename)
-
         # The filepath where the actions of this agents are stored
-        self.action_filename = f"actions_{self.username}_{self.filename}"
+        self.action_filename = f"{self.battle_tag}_{self.username}"
         self.action_path = os.path.join(self.tmp_directory, self.action_filename)
+
+        # if we are the collector we also save the complete battle state
+        self.battle_log_filename = f"battlelog_{self.battle_tag}_{self.username}"
+        self.battle_log_path = os.path.join(self.tmp_directory, self.battle_log_filename)
 
         # Generate the eval request message so we don't need to
         # create it with every request.
@@ -50,13 +49,18 @@ class DataCollector():
 
     def save_battle_state(self):
         """Save the collected results from the eval request to disk."""
-        self._merge_actions_and_state()
-        self._save_json(self.filepath, {"game": self.battle_log})
-        self._delete_directory(self.tmp_directory)
+        self.save_actions()
+        if self.is_collector:
+            self.save_battle_log()
+            self._merge_actions_and_state()
+        pass
 
     def save_actions(self):
         """Save the chosen actions of the agent into a tmp file"""
         self._save_json(self.action_path, {"actions": self.action_list})
+
+    def save_battle_log(self):
+        self._save_json(self.battle_log_path, {"battlelog" : self.battle_log})
 
     # Save dictionary as json.
     # Formated allows for a more readable result.
@@ -68,20 +72,28 @@ class DataCollector():
                 f.write(json.dumps(data))
 
     def _merge_actions_and_state(self):
-        actions_other_agent = self._get_other_agent_actions()
-        print(f"length of battle log {len(self.battle_log)}, length of my actions {len(self.action_list)}, of other agent {len(actions_other_agent)}")
+        """
+        merge the battlelog and action files
+        into one single files
+        """
+        pairs = self._get_agent_pairs()
 
-        for i in range(0, len(self.battle_log)):
-            # the sides key is a list with two entries, one for each player
-            # we need to find our list entry to append the action to it
-            list_index = 0 if self.battle_log[i]["sides"][0]["name"] == self.username else 1
-            other_list_index = 1 if list_index == 0 else 0
+        for pair in pairs:
+            battle, collector_actions, other_actions = pair
+            for i in range(len(battle)):
+                # the sides key is a list with two entries, one for each player
+                # we need to find our list entry to append the action to it
+                list_index = 0 if battle[i]["sides"][0]["name"] == self.username else 1
+                other_list_index = 1 if list_index == 0 else 0
 
-            self.battle_log[i]["sides"][list_index].update({"action": self.action_list[i]})
-            if i >= len(actions_other_agent):
-                self.battle_log[i]["sides"][other_list_index].update({"action": "None"})
-            else:
-                self.battle_log[i]["sides"][other_list_index].update({"action": actions_other_agent[i]})
+                battle[i]["sides"][list_index].update({"action": collector_actions[i]})
+                if i >= len(other_actions):
+                    battle[i]["sides"][other_list_index].update({"action": "None"})
+                else:
+                    battle[i]["sides"][other_list_index].update({"action": other_actions[i]})
+
+            self._save_json(os.path.join(self.directory, self._create_filename()), {"game" : battle})
+
 
 
     def _get_other_agent_actions(self):
@@ -91,16 +103,52 @@ class DataCollector():
         print(f"the other filename is {other_filename}")
         return self._read_json(os.path.join(self.tmp_directory, other_filename))["actions"]
 
+    def _get_agent_pairs(self):
+        """
+        find all the data in the tmp directory corresponding
+        to a game this agent played. This means battle state, actions
+        and actions of the other user. Delete the temporary files afterwards
+        """
+        filelist = os.listdir(self.tmp_directory)
+        collectors = []
+        for file in filelist:
+            filename_content = file.split("_")
+            if filename_content[0] == "battlelog" and filename_content[-1] == self.username:
+                collectors.append(file)
+
+        print(f"found {len(collectors)} collectors")
+
+        pairs = []
+        for collector in collectors:
+            filename_content = collector.split("_")
+            battle_tag = filename_content[-2]
+            my_actions_file = self._find_user(filelist, self.username, battle_tag)
+            other_actions_file = self._find_user(filelist, self.other_user, battle_tag)
+            if my_actions_file == "" or other_actions_file == "":
+                continue
+            
+            print(f"found pair {my_actions_file}, {other_actions_file}")
+            battle = self._read_json(os.path.join(self.tmp_directory, collector))
+            my_actions = self._read_json(os.path.join(self.tmp_directory, my_actions_file))
+            other_actions = self._read_json(os.path.join(self.tmp_directory, other_actions_file))
+            pairs.append((battle["battlelog"], my_actions["actions"], other_actions["actions"]))
+            os.remove(os.path.join(self.tmp_directory, collector))
+            os.remove(os.path.join(self.tmp_directory, my_actions_file))
+            os.remove(os.path.join(self.tmp_directory, other_actions_file))
+        return pairs
+
+    def _find_user(self, filelist, username,battle_tag):
+        for file in filelist:
+            filename_content = file.split("_")
+            if (filename_content[-1] == username and filename_content[-2] == battle_tag
+                and len(filename_content) == 2):
+                return file
+        return ""         
+        
+
     def _read_json(self, file):
         with open(file, 'r') as f:
             return json.load(f)
-
-    def _get_other_agent_file(self):
-        file_list = os.listdir(self.tmp_directory)
-        for filename in file_list:
-            if (filename != self.filename and
-                filename != self.action_filename):
-                return filename
 
     def _delete_directory(self, directory):
         file_list = os.listdir(directory)
