@@ -48,7 +48,9 @@ if __name__ == "__main__":
     { "challenger" : "dlinvcchallenge7", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept7" },
     { "challenger" : "dlinvcchallenge8", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept8" },
     { "challenger" : "dlinvcchallenge9", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept9" },
-    { "challenger" : "dlinvcchallenge10", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept10" }
+    { "challenger" : "dlinvcchallenge10", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept10" },
+    { "challenger" : "dlinvcchallenge11", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept11" },
+    { "challenger" : "dlinvcchallenge12", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept12" }
     ]
 
     if args.count > len(username_password_map):
