@@ -3,6 +3,7 @@ import time
 import os
 import json
 import time
+import pickle
 
 class DataCollector():
     def __init__(self, directory, is_collector, username, other_user, battle_tag):
@@ -16,7 +17,7 @@ class DataCollector():
         # This can be controlled with the env variable DATA_COLLECTOR=True
         self.is_collector = is_collector
         
-        self.filename_extension = ".json"
+        self.filename_extension = ".pkl"
 
         self.tmp_directory = os.path.join(self.directory, "tmp")
         self._create_directories([self.tmp_directory])
@@ -57,10 +58,10 @@ class DataCollector():
 
     def save_actions(self):
         """Save the chosen actions of the agent into a tmp file"""
-        self._save_json(self.action_path, {"actions": self.action_list})
+        self._save_pickle(self.action_path, {"actions": self.action_list})
 
     def save_battle_log(self):
-        self._save_json(self.battle_log_path, {"battlelog" : self.battle_log})
+        self._save_pickle(self.battle_log_path, {"battlelog" : self.battle_log})
 
     # Save dictionary as json.
     # Formated allows for a more readable result.
@@ -70,6 +71,14 @@ class DataCollector():
                 f.write(json.dumps(data, indent=4, separators=(',', ': ')))
             else:
                 f.write(json.dumps(data))
+
+    def _save_pickle(self, filename, data):
+        with open(filename, 'wb') as f:
+            pickle.dump(data, f)
+
+    def _load_pickle(self, path):
+        with open(path, 'rb') as f:
+             return pickle.load(f)
 
     def _merge_actions_and_state(self):
         """
@@ -92,7 +101,7 @@ class DataCollector():
                 else:
                     battle[i]["sides"][other_list_index].update({"action": other_actions[i]})
 
-            self._save_json(os.path.join(self.directory, self._create_filename()), {"game" : battle})
+            self._save_pickle(os.path.join(self.directory, self._create_filename()), {"game" : battle})
 
 
 
@@ -101,7 +110,7 @@ class DataCollector():
         and parse these actions"""
         other_filename = self._get_other_agent_file()
         print(f"the other filename is {other_filename}")
-        return self._read_json(os.path.join(self.tmp_directory, other_filename))["actions"]
+        return self._load_pickle(os.path.join(self.tmp_directory, other_filename))["actions"]
 
     def _get_agent_pairs(self):
         """
@@ -128,9 +137,9 @@ class DataCollector():
                 continue
             
             print(f"found pair {my_actions_file}, {other_actions_file}")
-            battle = self._read_json(os.path.join(self.tmp_directory, collector))
-            my_actions = self._read_json(os.path.join(self.tmp_directory, my_actions_file))
-            other_actions = self._read_json(os.path.join(self.tmp_directory, other_actions_file))
+            battle = self._load_pickle(os.path.join(self.tmp_directory, collector))
+            my_actions = self._load_pickle(os.path.join(self.tmp_directory, my_actions_file))
+            other_actions = self._load_pickle(os.path.join(self.tmp_directory, other_actions_file))
             pairs.append((battle["battlelog"], my_actions["actions"], other_actions["actions"]))
             os.remove(os.path.join(self.tmp_directory, collector))
             os.remove(os.path.join(self.tmp_directory, my_actions_file))
