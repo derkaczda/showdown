@@ -111,7 +111,7 @@ class PSWebsocketClient:
             logger.info("Sleeping for 20 seconds because last challenge was less than 20 seconds ago")
             await asyncio.sleep(20)
         await self.update_team(team)
-        message = ["/challenge {},{}".format(user_to_challenge, battle_format)]
+        message = ["/challenge {},{} @@@ Dynamax Clause".format(user_to_challenge, battle_format)]
         await self.send_message('', message)
         self.last_challenge_time = time.time()
 

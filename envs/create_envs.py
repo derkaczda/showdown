@@ -33,9 +33,9 @@ if __name__ == "__main__":
     parser.add_argument("--websocket", type=str, default="showdown-server:8081")
     parser.add_argument("--count", type=int, default=10, help="number of agent pairs")
     parser.add_argument("--runcount", type=int, default=10)
-    parser.add_argument("--gamemode", type=str, default="gen8customgame")
+    parser.add_argument("--gamemode", type=str, default="gen8customgame@@@Dynamax Clause")
     parser.add_argument("--datadir", type=str, default="dataset")
-    parser.add_argument("--teamdir", type=str)
+    parser.add_argument("--teamdir", type=str, default="")
     parser.add_argument("--dest", type=str, help="the folder where we save the env files")
     args = parser.parse_args()
 
@@ -52,7 +52,9 @@ if __name__ == "__main__":
     { "challenger" : "dlinvcchallenge11", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept11" },
     { "challenger" : "dlinvcchallenge12", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept12" },
     { "challenger" : "dlinvcchallenge13", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept13" },
-    { "challenger" : "dlinvcchallenge14", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept14" }
+    { "challenger" : "dlinvcchallenge14", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept14" },
+    { "challenger" : "dlinvcchallenge15", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept15" },
+    { "challenger" : "dlinvcchallenge16", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept16" }
     ]
 
     if args.count > len(username_password_map):
