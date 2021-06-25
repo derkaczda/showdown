@@ -107,9 +107,9 @@ class PSWebsocketClient:
 
     async def challenge_user(self, user_to_challenge, battle_format, team):
         logger.debug("Challenging {}...".format(user_to_challenge))
-        if time.time() - self.last_challenge_time < 10:
-            logger.info("Sleeping for 10 seconds because last challenge was less than 10 seconds ago")
-            await asyncio.sleep(10)
+        if time.time() - self.last_challenge_time < 20:
+            logger.info("Sleeping for 20 seconds because last challenge was less than 20 seconds ago")
+            await asyncio.sleep(20)
         await self.update_team(team)
         message = ["/challenge {},{}".format(user_to_challenge, battle_format)]
         await self.send_message('', message)
