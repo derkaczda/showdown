@@ -180,7 +180,7 @@ async def pokemon_battle(ps_websocket_client, config):
     other_user = config.user_to_challenge if config.data_collector else ""
     collector = datacollector.DataCollector(config.data_directory, 
         config.data_collector, config.username, other_user, battle.battle_tag)
-     
+    last_best_move = None 
     while True:
         msg = await ps_websocket_client.receive_message()
             
@@ -196,12 +196,13 @@ async def pokemon_battle(ps_websocket_client, config):
             return winner
         elif collector.msg_for_collector(msg):
             collector.add_battle_state(msg)
+            collector.add_action(last_best_move)
         else:
             action_required = await async_update_battle(battle, msg)
             if action_required and not battle.wait:
-                if config.data_collector:
-                    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])       
  
                 best_move = await async_pick_move(battle)
-                collector.add_action(best_move)
+                last_best_move = best_move
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
+                if config.data_collector:
+                    await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])       
