@@ -184,6 +184,7 @@ def heal_or_damage(battle, split_msg):
 def faint(battle, split_msg):
     if is_opponent(battle, split_msg):
         side = battle.opponent
+        battle.evaluate_battle = True
     else:
         side = battle.user
 
@@ -929,6 +930,7 @@ def update_battle(battle, msg):
     msg_lines = msg.split('\n')
 
     action = None
+    battle.evaluate_battle = False
     for i, line in enumerate(msg_lines):
         split_msg = line.split('|')
         if len(split_msg) < 2:
@@ -987,6 +989,7 @@ def update_battle(battle, msg):
                 check_choice_band_or_specs(battle, damage_dealt)
 
         elif action == 'switch' and is_opponent(battle, split_msg):
+            battle.evaluate_battle = True
             check_heavydutyboots(battle, msg_lines[i+1:])
 
         if action == 'turn':
@@ -996,6 +999,7 @@ def update_battle(battle, msg):
         return False
 
     if action != "request":
+        #battle.evaluate_battle = battle.force_switch
         return battle.force_switch
 
 

@@ -6,11 +6,12 @@ import time
 import pickle
 
 class DataCollector():
-    def __init__(self, directory, is_collector, username, other_user, battle_tag):
+    def __init__(self, directory, is_collector, username, other_user, battle_tag, save_as_json=False):
         self.directory = directory
         self.username = username
         self.other_user = other_user
         self.battle_tag = battle_tag
+        self.save_as_json = save_as_json
 
         # Only one agent needs to collect the battle states
         # the other agent only collects his chosen actions.
@@ -36,6 +37,7 @@ class DataCollector():
 
         self.turn = 0
         self.action_list = []
+        self.action_list_2 = []
         self.battle_log = []
 
     def _create_filename(self):
@@ -59,9 +61,13 @@ class DataCollector():
     def save_actions(self):
         """Save the chosen actions of the agent into a tmp file"""
         self._save_pickle(self.action_path, {"actions": self.action_list})
+        if self.save_as_json:
+            self._save_json(self.action_path+".json", {"actions": self.action_list_2})
 
     def save_battle_log(self):
         self._save_pickle(self.battle_log_path, {"battlelog" : self.battle_log})
+        if self.save_as_json:
+            self._save_json(self.battle_log_path+".json", {"battlelog" : self.battle_log})
 
     # Save dictionary as json.
     # Formated allows for a more readable result.
@@ -101,7 +107,10 @@ class DataCollector():
                 else:
                     battle[i]["sides"][other_list_index].update({"action": other_actions[i]})
 
-            self._save_pickle(os.path.join(self.directory, self._create_filename()), {"game" : battle})
+            path = os.path.join(self.directory, self._create_filename())
+            self._save_pickle(path, {"game" : battle})
+            if self.save_as_json:
+                self._save_json(path+".json", {"game" : battle})
 
 
 
@@ -141,9 +150,10 @@ class DataCollector():
             my_actions = self._load_pickle(os.path.join(self.tmp_directory, my_actions_file))
             other_actions = self._load_pickle(os.path.join(self.tmp_directory, other_actions_file))
             pairs.append((battle["battlelog"], my_actions["actions"], other_actions["actions"]))
-            os.remove(os.path.join(self.tmp_directory, collector))
-            os.remove(os.path.join(self.tmp_directory, my_actions_file))
-            os.remove(os.path.join(self.tmp_directory, other_actions_file))
+            if self.save_as_json:
+                os.remove(os.path.join(self.tmp_directory, collector))
+                os.remove(os.path.join(self.tmp_directory, my_actions_file))
+                os.remove(os.path.join(self.tmp_directory, other_actions_file))
         return pairs
 
     def _find_user(self, filelist, username,battle_tag):
@@ -171,9 +181,10 @@ class DataCollector():
         self.battle_log.append(self._parse_msg(msg))
         self.turn = self.battle_log[-1]['turn']
 
-    def add_action(self, action):
+    def add_action(self, action, turn):
         """Append the chosen action for this turn."""
         self.action_list.append(action)     
+        self.action_list_2.append((action, turn))     
 
     def msg_for_collector(self, msg):
         """Check if the message is the response to a eval request, 

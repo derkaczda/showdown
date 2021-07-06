@@ -86,6 +86,8 @@ async def showdown():
     original_pokedex = deepcopy(pokedex)
     original_move_json = deepcopy(all_move_json)
 
+    time.sleep(10)
+
     ps_websocket_client = await PSWebsocketClient.create(config.username, config.password, config.websocket_uri)
     await ps_websocket_client.login()
 
