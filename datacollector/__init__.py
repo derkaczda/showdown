@@ -52,6 +52,11 @@ class DataCollector():
 
     def save_battle_state(self):
         """Save the collected results from the eval request to disk."""
+        if self.is_collector:
+            print(f"+++++++++ (COLLECTOR) saving battlestate {self.battle_tag}")
+        else:
+            print(f"+++++++++ (ACCEPTER) saving battlestate {self.battle_tag}")
+
         self.save_actions()
         if self.is_collector:
             self.save_battle_log()
@@ -150,7 +155,7 @@ class DataCollector():
             my_actions = self._load_pickle(os.path.join(self.tmp_directory, my_actions_file))
             other_actions = self._load_pickle(os.path.join(self.tmp_directory, other_actions_file))
             pairs.append((battle["battlelog"], my_actions["actions"], other_actions["actions"]))
-            if self.save_as_json:
+            if not self.save_as_json:
                 os.remove(os.path.join(self.tmp_directory, collector))
                 os.remove(os.path.join(self.tmp_directory, my_actions_file))
                 os.remove(os.path.join(self.tmp_directory, other_actions_file))
