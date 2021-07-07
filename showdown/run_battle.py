@@ -208,11 +208,15 @@ async def pokemon_battle(ps_websocket_client, config):
                     if collector.msg_for_collector(tmp_msg):
                         collector.add_battle_state(tmp_msg)    
                 best_move = await async_pick_move(battle)
-                best_move.append(f"turn: {battle.turn}")
-                collector.add_action(best_move, battle.turn)
-                last_best_move = best_move
-                last_turn = battle.turn
                 await ps_websocket_client.send_message(battle.battle_tag, best_move)
+                best_move.append(f"turn: {battle.turn}")
+                if last_best_move is not None:
+                    if best_move[0] == last_best_move[0] and best_move[1] == last_best_move[1] and best_move[2] == last_best_move[2]:
+                        #somehow the accepter logs 3 times after a force switch
+                        continue
+                collector.add_action(best_move, battle.turn)
+                last_best_move = best_move.copy()
+                last_turn = battle.turn
 
             # this happens if the opponnet is forced to switch due
             # to death of active pokemon. we need to log this case as well.
@@ -227,4 +231,5 @@ async def pokemon_battle(ps_websocket_client, config):
                         tmp_msg = await ps_websocket_client.receive_message()
 
                     if collector.msg_for_collector(tmp_msg):
-                        collector.add_battle_state(tmp_msg)   
+                        collector.add_battle_state(tmp_msg)
+                battle.evaluate_battle = False

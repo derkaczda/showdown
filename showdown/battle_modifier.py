@@ -989,7 +989,7 @@ def update_battle(battle, msg):
                 check_choice_band_or_specs(battle, damage_dealt)
 
         elif action == 'switch' and is_opponent(battle, split_msg):
-            battle.evaluate_battle = True
+            # battle.evaluate_battle = True
             check_heavydutyboots(battle, msg_lines[i+1:])
 
         if action == 'turn':
