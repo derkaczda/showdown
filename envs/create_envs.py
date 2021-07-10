@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--websocket", type=str, default="showdown-server:8081")
-    parser.add_argument("--count", type=int, default=10, help="number of agent pairs")
+    parser.add_argument("--count", type=int, default=16, help="number of agent pairs")
     parser.add_argument("--runcount", type=int, default=10)
     parser.add_argument("--gamemode", type=str, default="gen8customgame@@@Dynamax Clause")
     parser.add_argument("--datadir", type=str, default="dataset")
