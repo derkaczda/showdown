@@ -198,6 +198,9 @@ async def pokemon_battle(ps_websocket_client, config):
         else:
             action_required = await async_update_battle(battle, msg)    
             
+            if battle.turn > 100:
+                raise ValueError("The game goes on for too long. Killing the process.")
+
             if action_required and not battle.wait:
                 if config.data_collector:
                     await ps_websocket_client.send_message(battle.battle_tag, ['/evalbattle ' + collector.eval_msg])
