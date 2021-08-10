@@ -46,6 +46,7 @@ def parse_configs():
     config.data_directory = env("DATA_DIR", "dataset")
     config.data_collector = env.bool("DATA_COLLECTOR", False)
     config.team_dir = env("TEAM_DIR", None)
+    config.timer_on = env.bool("TIMER_ON", True)
 
     if config.team_dir != None:
         files = os.listdir(os.path.join("/showdown", "teams", "teams", config.team_dir))

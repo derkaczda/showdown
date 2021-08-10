@@ -161,7 +161,7 @@ async def start_standard_battle(ps_websocket_client: PSWebsocketClient, pokemon_
     return battle
 
 
-async def start_battle(ps_websocket_client, pokemon_battle_type):
+async def start_battle(ps_websocket_client, pokemon_battle_type, timer_on):
     if "random" in pokemon_battle_type:
         Scoring.POKEMON_ALIVE_STATIC = 30  # random battle benefits from a lower static score for an alive pkmn
         battle = await start_random_battle(ps_websocket_client, pokemon_battle_type)
@@ -169,14 +169,15 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
         battle = await start_standard_battle(ps_websocket_client, pokemon_battle_type)
 
     await ps_websocket_client.send_message(battle.battle_tag, [config.greeting_message])
-    await ps_websocket_client.send_message(battle.battle_tag, ['/timer on'])
+    if timer_on:
+        await ps_websocket_client.send_message(battle.battle_tag, ['/timer on'])
 
     return battle
 
 
 async def pokemon_battle(ps_websocket_client, config):
     pokemon_battle_type = config.pokemon_mode 
-    battle = await start_battle(ps_websocket_client, pokemon_battle_type)
+    battle = await start_battle(ps_websocket_client, pokemon_battle_type, config.timer_on)
     other_user = config.user_to_challenge if config.data_collector else ""
     collector = datacollector.DataCollector(config.data_directory, 
         config.data_collector, config.username, other_user, battle.battle_tag, save_as_json=False)

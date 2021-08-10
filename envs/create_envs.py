@@ -1,16 +1,17 @@
 import argparse
 import os
 
-def create_accepter(name, websocket, gamemode, run_count, data_dir, team_dir, battlebot):
+def create_accepter(name, websocket, gamemode, run_count, data_dir, team_dir, battlebot, timer):
     return f"WEBSOCKET_URI={websocket}\n" \
     f"PS_USERNAME={name}\n" \
     f"POKEMON_MODE={gamemode}\n" \
     f"RUN_COUNT={run_count}\n" \
     f"BOT_MODE=ACCEPT_CHALLENGE\n" \
     f"DATA_DIR={data_dir}\n" \
-    f"TEAM_DIR={team_dir}\n"
+    f"TEAM_DIR={team_dir}\n" \
+    f"TIMER_ON={timer}"
 
-def create_challenger(name, to_challenge, password, websocket, gamemode, run_count, data_dir, team_dir, battlebot):
+def create_challenger(name, to_challenge, password, websocket, gamemode, run_count, data_dir, team_dir, battlebot, timer):
     return f"WEBSOCKET_URI={websocket}\n" \
     f"PS_USERNAME={name}\n" \
     f"PS_PASSWORD={password}\n" \
@@ -20,7 +21,8 @@ def create_challenger(name, to_challenge, password, websocket, gamemode, run_cou
     f"BOT_MODE=CHALLENGE_USER\n" \
     f"DATA_DIR={data_dir}\n" \
     f"DATA_COLLECTOR=True\n" \
-    f"TEAM_DIR={team_dir}\n"
+    f"TEAM_DIR={team_dir}\n" \
+    f"TIMER_ON={timer}"
 
 
 def save_file(path, content):
@@ -39,6 +41,7 @@ if __name__ == "__main__":
     parser.add_argument("--teamdir", type=str, default="")
     parser.add_argument("--battlebot", type=str, default="most_damage")
     parser.add_argument("--dest", type=str, help="the folder where we save the env files")
+    parser.add_argument("--timer", type=str, default="True")
     args = parser.parse_args()
 
     username_password_map = [{ "challenger" : "dlinvcchallenge1", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept1" },
@@ -68,9 +71,9 @@ if __name__ == "__main__":
     for i in range(args.count):
         challenger, password, accepter = username_password_map[i].values()
         challenger_str = create_challenger(challenger, accepter, password, args.websocket, args.gamemode, args.runcount,
-            args.datadir, args.teamdir, args.battlebot)
+            args.datadir, args.teamdir, args.battlebot, args.timer)
         accepter_str = create_accepter(accepter, args.websocket, args.gamemode, args.runcount, args.datadir, args.teamdir,
-            args.battlebot)
+            args.battlebot, args.timer)
 
         accept_file = os.path.join(args.dest, f"accept{i+1}")
         challenge_file = os.path.join(args.dest, f"challenge{i+1}")
