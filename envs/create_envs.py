@@ -41,10 +41,10 @@ if __name__ == "__main__":
     parser.add_argument("--dest", type=str, help="the folder where we save the env files")
     args = parser.parse_args()
 
-    username_password_map = [{ "challenger" : "dlinvcchallenge1", "password" : "JbNeAhqXqw35EEAR", "accepter" : "dlinvcaccept1" },
-    { "challenger" : "dlinvcchallenge2", "password" : "Fz8LmGdX2gN8By9N", "accepter" : "dlinvcaccept2" },
+    username_password_map = [{ "challenger" : "dlinvcchallenge1", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept1" },
+    { "challenger" : "dlinvcchallenge2", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept2" },
     { "challenger" : "dlinvcchallenge3", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept3" },
-    { "challenger" : "dlinvcchallenge4", "password" : "C2pWHquRtUwuVBMv", "accepter" : "dlinvcaccept4" },
+    { "challenger" : "dlinvcchallenge4", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept4" },
     { "challenger" : "dlinvcchallenge5", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept5" },
     { "challenger" : "dlinvcchallenge6", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept6" },
     { "challenger" : "dlinvcchallenge7", "password" : "NbmjPcthUbzT4LGz", "accepter" : "dlinvcaccept7" },
