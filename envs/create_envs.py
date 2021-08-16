@@ -9,7 +9,8 @@ def create_accepter(name, websocket, gamemode, run_count, data_dir, team_dir, ba
     f"BOT_MODE=ACCEPT_CHALLENGE\n" \
     f"DATA_DIR={data_dir}\n" \
     f"TEAM_DIR={team_dir}\n" \
-    f"TIMER_ON={timer}"
+    f"TIMER_ON={timer}\n" \
+    f"BATTLE_BOT={battlebot}"
 
 def create_challenger(name, to_challenge, password, websocket, gamemode, run_count, data_dir, team_dir, battlebot, timer):
     return f"WEBSOCKET_URI={websocket}\n" \
@@ -22,6 +23,7 @@ def create_challenger(name, to_challenge, password, websocket, gamemode, run_cou
     f"DATA_DIR={data_dir}\n" \
     f"DATA_COLLECTOR=True\n" \
     f"TEAM_DIR={team_dir}\n" \
+    f"BATTLE_BOT={battlebot}\n" \
     f"TIMER_ON={timer}"
 
 
