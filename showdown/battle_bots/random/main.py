@@ -25,6 +25,6 @@ class BattleBot(Battle):
         if self.force_switch or not moves:
             return format_decision(self, switches[0])
 
-        choice = random.choice(moves)
+        choice = random.choice(moves+switches)
 
         return format_decision(self, choice)
